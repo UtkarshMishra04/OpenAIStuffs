@@ -6,6 +6,8 @@ from keras.initializers import RandomUniform
 from keras.models import Model
 from keras.layers import Input, Dense, Reshape, LSTM, Lambda, BatchNormalization, GaussianNoise, Flatten
 
+tf.compat.v1.disable_eager_execution()
+
 class Actor:
 
     def __init__(self, env, state_dim, action_dim, action_range, lr, tau):
@@ -56,7 +58,7 @@ class Actor:
         action_gdts = K.placeholder(shape=(None, self.action_dim))
         params_grad = tf.gradients(self.model.output, self.model.trainable_weights, -action_gdts)
         grads = zip(params_grad, self.model.trainable_weights)
-        return K.function(inputs=[self.model.input, action_gdts], outputs=[ K.constant(1)],updates=[tf.train.AdamOptimizer(self.lr).apply_gradients(grads)])
+        return K.function(inputs=[self.model.input, action_gdts], outputs=[ K.constant(1)],updates=[tf.optimizers.Adam(self.lr).apply_gradients(grads)])
 
     def save(self, path):
         self.model.save_weights(path + str(self.env.unwrapped.spec.id)+'_actor.h5')

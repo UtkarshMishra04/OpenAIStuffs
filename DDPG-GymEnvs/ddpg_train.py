@@ -17,6 +17,7 @@ from replay_buffer import ReplayBuffer
 from actor import Actor
 from critic import Critic
 
+
 class OrnsteinUhlenbeckActionNoise:
     def __init__(self, mu, sigma=0.25, theta=.05, dt=1e-2, x0=None):
         self.theta = theta
@@ -53,7 +54,7 @@ def train(env, actor, critic, actor_noise, state_dim, action_dim):
     batch_size = 128
     min_buffer_size = 500
     buffer_size = 20000
-    gamma = 0.99985
+    gamma = 0.95
 
     Reward = []
 

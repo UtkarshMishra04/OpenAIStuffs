@@ -7,6 +7,8 @@ from keras.models import Model
 from keras.optimizers import Adam
 from keras.layers import Input, Dense, concatenate, LSTM, Reshape, BatchNormalization, Lambda, Flatten
 
+tf.compat.v1.disable_eager_execution()
+
 class Critic:
 
     def __init__(self, state_dim, action_dim, lr, tau):
