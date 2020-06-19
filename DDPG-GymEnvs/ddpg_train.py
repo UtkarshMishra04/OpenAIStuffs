@@ -1,7 +1,6 @@
 import sys
 import argparse
 import numpy as np
-import roboschool
 import gym
 import pandas as pd
 import math
@@ -51,8 +50,8 @@ def bellman(rewards, q_values, dones,gamma):
 def train(env, actor, critic, actor_noise, state_dim, action_dim):
 
     num_ep = 10000
-    batch_size = 128
-    min_buffer_size = 500
+    batch_size = 500
+    min_buffer_size = 1000
     buffer_size = 20000
     gamma = 0.95
 
@@ -97,6 +96,8 @@ def train(env, actor, critic, actor_noise, state_dim, action_dim):
             replay_buffer.add(s, action, r, terminal, next_s)
 
             if replay_buffer.size() > min_buffer_size:
+
+                print("Training")
 
                 s_batch, a_batch, r_batch, t_batch, next_s_batch = replay_buffer.sample_batch(batch_size)
 
@@ -165,7 +166,7 @@ def main(args=None):
 
     parser.parse_args(args)
 
-    env = gym.make('LunarLanderContinuous-v2')
+    env = gym.make('MountainCarContinuous-v0')
 
     lr = 0.002
     tau = 0.001
@@ -215,7 +216,7 @@ def main(args=None):
                 #action = np.clip(action+actor_noise(), env.action_space.low, env.action_space.high)
 
                 next_s, r, terminal,_ = env.step(action)
-                env.render()
+                #env.render()
 
                 curr_state = next_s
                 reward_ep += r
