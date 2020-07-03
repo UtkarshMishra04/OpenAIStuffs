@@ -50,7 +50,7 @@ def bellman(rewards, q_values, dones,gamma):
 def train(env, actor, critic, actor_noise, state_dim, action_dim):
 
     num_ep = 10000
-    batch_size = 500
+    batch_size = 256
     min_buffer_size = 1000
     buffer_size = 20000
     gamma = 0.95
@@ -97,7 +97,7 @@ def train(env, actor, critic, actor_noise, state_dim, action_dim):
 
             if replay_buffer.size() > min_buffer_size:
 
-                print("Training")
+                #print("Training")
 
                 s_batch, a_batch, r_batch, t_batch, next_s_batch = replay_buffer.sample_batch(batch_size)
 
@@ -105,16 +105,16 @@ def train(env, actor, critic, actor_noise, state_dim, action_dim):
 
                 critic_target = bellman(r_batch, q_values, t_batch,gamma)
 
-                
+
                 critic.train_on_batch(s_batch, a_batch, critic_target)
 
                 ep_ave_max_q += np.amax(critic.target_predict([s_batch,a_batch]))
-                
+
                 actions = actor.model.predict(s_batch)
                 grads = critic.gradients(s_batch, actions)
-                
+
                 actor.train(s_batch, actions, np.array(grads).reshape((-1, action_dim)))
-                
+
                 if (total_length+1)%200==0:
                     #print("weights transferred")
                     total_length = 0
@@ -124,8 +124,8 @@ def train(env, actor, critic, actor_noise, state_dim, action_dim):
 
             curr_state = next_s
             reward_ep += r
-            ep_length += 1  
-            total_length += 1          
+            ep_length += 1
+            total_length += 1
 
             if terminal:
                 print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f} | Steps: {:d} | Epsilon: {:.4f}'.format(int(reward_ep),i, (ep_ave_max_q / float(ep_length)), ep_length,epsilon))#,(total_reward/float(i+1))))
@@ -168,13 +168,13 @@ def main(args=None):
 
     env = gym.make('MountainCarContinuous-v0')
 
-    lr = 0.002
-    tau = 0.001
+    lr = 0.004
+    tau = 0.005
 
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
 
-    actor = Actor(env,state_dim,action_dim,env.action_space.high,0.2 * lr, tau)
+    actor = Actor(env,state_dim,action_dim,env.action_space.high,0.5 * lr, tau)
     critic = Critic(state_dim,action_dim,lr, tau)
 
 
@@ -186,7 +186,7 @@ def main(args=None):
     #print(env.action_space.sample())
     algo = args[1]
 
-    
+
 
     if algo=="train":
         train(env, actor, critic, actor_noise, state_dim, action_dim)
@@ -211,16 +211,16 @@ def main(args=None):
 
                 s = curr_state
 
-                
+
                 action = actor.predict(s)[0]
                 #action = np.clip(action+actor_noise(), env.action_space.low, env.action_space.high)
 
                 next_s, r, terminal,_ = env.step(action)
-                #env.render()
+                env.render()
 
                 curr_state = next_s
                 reward_ep += r
-                ep_length += 1            
+                ep_length += 1
 
                 if terminal:
                     print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f} | Steps: {:d}'.format(int(reward_ep),i, (ep_ave_max_q / float(ep_length)), ep_length))#,(total_reward/float(i+1))))
